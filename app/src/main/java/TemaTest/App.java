@@ -5,31 +5,19 @@
 
 package TemaTest;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class App {
     
     public App() {/* compiled code */
     }
 
-    private static String extragerePN(String rowstring) {
+    private static String extragerePN(String rowstring, int lungime) {
             String s = rowstring.replaceAll("'", "");
-            return  s.substring(3);
-    }
-
-    private static String extrageretext(String rowstring) {
-        String s = rowstring.replaceAll("'", "");
-        return  s.substring(6);
-    }
-
-    private static String extragereId(String rowstring) {
-        String s = rowstring.replaceAll("'", "");
-        return  s.substring(4);
+            return  s.substring(lungime);
     }
 
     public int creatUser(String user, String parola, Utilizator utilizator){
@@ -67,7 +55,7 @@ public class App {
                 return 2;
             }
         }
-        return 0; // utilizatorul nu exista are parola sau userul gresit
+        return 2; // utilizatorul nu exista are parola sau userul gresit
     }
 
 
@@ -86,7 +74,6 @@ public class App {
     }
 
     public int verificareid(String id, List<String> lines) {
-        // sa pui sau id != null
         if(!lines.isEmpty() && Integer.parseInt(id) <= lines.size()) {
             return 3; // SUCCESC
         } else {
@@ -95,16 +82,149 @@ public class App {
     }
 
     //citeste toate liniile din fisier si le pune intr-o lista de stringuri
-    public static List<String> citirefisier() throws IOException{
+    public static List<String> citirefisier(String path) throws IOException{
         List<String> lines = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
             }
         }
         return lines;
+    }
+
+    public int verUserFollow(Utilizator utilizator, String follow, int val) {
+        if (follow == null) {
+            return 4; // No username to follow was provided
+        }
+            int exist = 0;
+            try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/user.csv"))) {
+                String line;
+                String splitBy = ",";
+
+                while ((line = br.readLine()) != null) {
+                    String[] user = line.split(splitBy);
+
+                    for (int i = 0; i < user.length; i++) {
+                        // daca user-ul cerut exista in baza de date verificam sa vedem daca era deja in followurile user nostru
+                        if (follow.equals(user[i]) && (follow != utilizator.userName)) {
+                            exist = 1;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (exist == 0) {
+                return 5; // nu exista in baza de date, The username to follow was not valid
+            }
+
+            /* val = 1 --> pentru executia la follow cand fisierul e gol
+            *  val = 2 --> pentru executia la unfollow cand fisierul e gol*/
+            if(val == 1) {
+                // daca userul nu are niciun follower atunci il punem
+                if (!verfisier()) {
+                    utilizator.setFollow(follow);
+                    utilizator.introducInFisierFolloweri(follow);
+                    return 3; //“Operation execute successfully”
+                }
+            } else if( val == 2){
+                // daca userul nu are niciun follower atunci nu il mai punem punem
+                if(!verfisier()) {
+                    return 5; //The username to unfollow was not valid
+                }
+            }
+
+            int ok = 0;
+            if(verfisier()) {
+                try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/follow.csv"))) {
+                    String lines;
+                    String splitBys = ",";
+                    while ((lines = br.readLine()) != null){
+                        String[] linie = lines.split(splitBys);
+                        for (int i = 0; i < linie.length; i++) {
+                            if (Objects.equals(linie[i], follow)) {
+                                ok = 1;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if( val == 1 ) {
+                if (ok == 1) {
+                    return 5; //exista deja in followeri, “The username to follow was not valid
+                } else {
+                    // inseamna ca utilizatorul nu exista in lista userului de folooweri
+                    // si trebuie pus
+                    utilizator.setFollow(follow);
+                    utilizator.introducInFisierFolloweri(follow);
+                    return 3; //“Operation execute successfully”
+                }
+            }
+            if(val == 2) {
+                if (ok == 1) {
+                    // stergem din fisierul de followeri userul
+                    stergeFollow(follow);
+                    return 3; //exista deja in followeri, “Operation executed successfully
+                } else {
+                    return 5; //nu se gaseste in lista user - ului inseamna ca e deja unfollow
+                }
+            }
+        return 0;
+    }
+
+    public void stergeFollow(String follow) {
+        // citim continut fisier
+        List<String> lin = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader("src/main/java/TemaTest/follow.csv"))) {
+            String linie;
+            while ((linie = reader.readLine()) != null) {
+                lin.add(linie);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            // Citirea conținutului actual
+            List<String> linii = lin;
+
+            // Verificam daca linia de șters exista
+            boolean linieGasita = linii.remove(follow + ",");
+
+            if (linieGasita) {
+                // Rescrierea conținutului actualizat înapoi în fișier
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/java/TemaTest/follow.csv"))) {
+                    for (String liniesec : linii) {
+                        writer.write(liniesec);
+                        writer.newLine();
+                    }
+                }
+            }
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // vedem daca fisierul este gol sau are scris ceva in el
+    public boolean verfisier() {
+        try (BufferedReader brs = new BufferedReader(new FileReader("src/main/java/TemaTest/follow.csv"))) {
+            String lines;
+            String splitBys = ",";
+            if ((lines = brs.readLine()) == null){
+                return false;
+            }
+            while ((lines = brs.readLine()) != null){
+                String[] user = lines.split(splitBys);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 
     public static void main(java.lang.String[] strings) {
@@ -114,6 +234,8 @@ public class App {
         Postare text = new Postare();
         String action = null;
         String id = null;
+        String follow = null;
+        String idlike = null;
 
         if(strings == null) {
             System.out.print("Hello world!");
@@ -122,7 +244,7 @@ public class App {
                 //stergem din fisier tot pentru urmatorul test
                 if (strings[i].startsWith("-cleanup-all")) {
                     try {
-                        PrintWriter writer = new PrintWriter("src/main/java/TemaTest/test.csv");
+                        PrintWriter writer = new PrintWriter("src/main/java/TemaTest/user.csv");
                         writer.close();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -134,16 +256,38 @@ public class App {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
+                    try {
+                        PrintWriter writer = new PrintWriter("src/main/java/TemaTest/follow.csv");
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        PrintWriter writer = new PrintWriter("src/main/java/TemaTest/like.csv");
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 action = strings[0];
                 if (strings[i].startsWith("-u")) {
-                    user = extragerePN(strings[i]);
+                    if(strings[i].startsWith("-username")) {
+                        follow = FunctiiAjutatoare.extragerePN(strings[i], 10);
+                    }else {
+                        user = FunctiiAjutatoare.extragerePN(strings[i], 3);
+                    }
                 } else if (strings[i].startsWith("-p")) {
-                    parola = extragerePN(strings[i]);
+                    if(strings[i].startsWith("-post-id '")) {
+                        idlike = FunctiiAjutatoare.extragerePN(strings[i], 9);
+                    } else {
+                        parola = FunctiiAjutatoare.extragerePN(strings[i], 3);
+                    }
                 } else  if(strings[i].startsWith("-text")) {
-                    text.setTextPostare(extrageretext(strings[i]));
-                } else if(strings[i].startsWith("-id")) {
-                    id = extragereId(strings[i]);
+                    text.setTextPostare(FunctiiAjutatoare.extragerePN(strings[i], 6));
+                } else if(strings[i].startsWith("-id ")) {
+                    id = FunctiiAjutatoare.extragerePN(strings[i], 4);
                 }
             }
 
@@ -186,7 +330,7 @@ public class App {
                         /*se citestc din fisier liniile*/
                         List<String> lines;
                         try {
-                            lines = citirefisier();
+                            lines = citirefisier("src/main/java/TemaTest/post.csv");
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -200,67 +344,70 @@ public class App {
                     answer.answerDeletePost(rezultat);
                 }
             }
-//        System.out.println(strings.toString());
-
-//        try (FileWriter fw = new FileWriter("src/main/java/TemaTest/test.csv", true);
-//             BufferedWriter bw = new BufferedWriter(fw);
-//             PrintWriter out = new PrintWriter(bw)) {
-//            out.print(user + "," + parola+"\n");
-//            System.out.println("--->>>Username: " + user +"\nParola: " + parola);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println("Username: " + user +"\nParola: " + parola);
 
 
+            if(action.startsWith("-follow")) {
+                utilizator.setParametriUser(user,parola);
 
-//        //citirea din fisier csv
-//        try (BufferedReader br = new BufferedReader(new FileReader("test.csv"))) {
-//            String line;
-//            String splitBy =",";
-//            while ((line = br.readLine()) != null)   //returns a Boolean value
-//                {
-//                    String[] usernume = line.split(splitBy);
-//                    System.out.println("User: " + usernume[0] + "\nparola: " + usernume[1]);
-//                }
-//        } catch (IOException e)
-//        {
-//            e.printStackTrace();
-//        }
-//
-//        //scriere in fiser csv
-//        try (FileWriter fw = new FileWriter("out.csv", true);
-//             BufferedWriter bw = new BufferedWriter(fw);
-//             PrintWriter out = new PrintWriter(bw)) {
-//
-//            out.println(user);
-//            out.println(parola);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+                // verificam sa vedem daca exista utilizatorul/daca e logat
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if(rezultat == 3) {
+                   int rezultatsec = aplicatie.verUserFollow(utilizator, follow, 1);
+                   answer.answerFollow(rezultatsec);
+                } else {
+                    answer.answerFollow(rezultat);
+                }
+            }
 
-//        //sterge fisierul csv
-//        try{
-//             Path path = Paths.get("out.csv");
+            if(action.startsWith("-unfollow")) {
+                utilizator.setParametriUser(user,parola);
 
-//             Files.deleteIfExists(path);
-//
-//             System.out.println("Fișierul a fost șters cu succes.");
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+                // verificam sa vedem daca exista utilizatorul/daca e logat
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if(rezultat == 3) {
+                    int rezultatsec = aplicatie.verUserFollow(utilizator, follow, 2);
+                    answer.answerUnfollow(rezultatsec);
+                } else {
+                    answer.answerUnfollow(rezultat);
+                }
+            }
 
-//        System.out.println("Username: " + user +"\nParola: " + parola);
-//        try {
-//            // Deschide fișierul existent și șterge conținutul
-//            PrintWriter writer = new PrintWriter("src/main/java/TemaTest/test.csv");
-//            writer.close();
-//
-//            System.out.println("Fișierul CSV a fost golit cu succes.");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+            if(action.startsWith("-like-post")) {
+                utilizator.setParametriUser(user,parola);
+                // verificam sa vedem daca exista utilizatorul/daca e logat
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if(rezultat == 3) {
+                    if(idlike != null) {
+                        /*se citestc din fisier liniile pentru postari*/
+                        List<String> lines;
+                        try {
+                            lines = citirefisier("src/main/java/TemaTest/post.csv");
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        // verificam daca exista o postare cu id-ul dat
+                        int rezultatSec = aplicatie.verificareid(idlike, lines);
+                        // inseamna ca exista o postare careia ii putem da like
+                        if(rezultatSec == 3) {
+                            // verificam daca postarea are deja like
+                            int likeGood = utilizator.postari.likeable.verLike(idlike);
+                            if(likeGood == 0) {
+                                utilizator.postari.likeable.fisierLikeId(idlike);
+                                answer.answerLike(rezultatSec);
+                            } else if(likeGood == 1) {
+                                answer.answerLike(5);
+                            }
 
+                        } else {
+                            answer.answerLike(rezultatSec);  // nu esxista postarea cu id-ul
+                        }
+                    } else {
+                        answer.answerLike(4); // nu a fost dat id
+                    }
+                } else {
+                    answer.answerLike(rezultat);
+                }
+            }
         }
 
     }

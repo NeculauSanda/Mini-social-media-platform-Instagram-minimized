@@ -44,4 +44,45 @@ public class Outputuri {
         }
     }
 
+    public void answerFollow(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 3) {
+            System.out.println("{'status':'ok','message':'Operation executed successfully'}");
+        } else if(val == 4) {
+            System.out.println("{'status':'error','message':'No username to follow was provided'}");
+        } else if(val == 5) {
+            System.out.println("{'status':'error','message':'The username to follow was not valid'}");
+        }
+    }
+
+    public void answerUnfollow(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 3) {
+            System.out.println("{'status':'ok','message':'Operation executed successfully'}");
+        } else if(val == 4) {
+            System.out.println("{'status':'error','message':'No username to unfollow was provided'}");
+        } else if(val == 5) {
+            System.out.println("{'status':'error','message':'The username to unfollow was not valid'}");
+        }
+    }
+
+    public void answerLike(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 3) {
+            System.out.println("{'status':'ok','message':'Operation executed successfully'}");
+        } else if(val == 4) {
+            System.out.println("{'status':'error','message':'No post identifier to like was provided'}");
+        } else if(val == 5) {
+            System.out.println("{'status':'error','message':'The post identifier to like was not valid'}");
+        }
+    }
 }
