@@ -141,4 +141,18 @@ public class Outputuri {
             System.out.println("{'status':'error','message':'The comment identifier to like was not valid'}");
         }
     }
+
+    public void answerUnlikeComPost(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 3) {
+            System.out.println("{'status':'ok','message':'Operation executed successfully'}");
+        } else if(val == 4) {
+            System.out.println("{'status':'error','message':'No comment identifier to unlike was provided'}");
+        } else if(val == 5) {
+            System.out.println("{'status':'error','message':'The comment identifier to unlike was not valid'}");
+        }
+    }
 }

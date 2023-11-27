@@ -214,12 +214,15 @@ public class App {
 
     // val == 1 --> sterge follow
     // val == 2 --> sterge like
+    // val == 3 --: sterge like comentariu
     public void stergeFollowOrLike(String followOrId, int val) {
         String path = null;
         if(val == 1) {
             path = "src/main/java/TemaTest/follow.csv";
-        } else {
+        } else if(val == 2) {
             path = "src/main/java/TemaTest/like.csv";
+        } else if (val == 3) {
+            path = "src/main/java/TemaTest/likeComentariu.csv";
         }
         // citim continut fisier
         List<String> lin = new ArrayList<>();
@@ -240,7 +243,7 @@ public class App {
             boolean linieGasita = false;
             if(val == 1) {
                 linieGasita = linii.remove(followOrId + ",");
-            } else {
+            } else if(val == 2 || val == 3) {
                 linieGasita = linii.remove(followOrId + "," + "true,");
             }
 
@@ -581,12 +584,12 @@ public class App {
                         if (rezultatSec == 3) {
                             // verificam daca postarea are deja like
                             int likeGood = utilizator.postari.comentariu.likeable.verLike(comentid);
-                            if (likeGood == 3) {
+                            if (likeGood == 5) {
                                 //adaugam likeul la comentariu
                                 utilizator.postari.comentariu.likeable.fisierLikeId(comentid);
-                                answer.answerLikeComPost(rezultatSec);
+                                answer.answerLikeComPost(3);
                             } else {
-                                answer.answerLikeComPost(likeGood);
+                                answer.answerLikeComPost(5);
                             }
                         } else {
                             answer.answerLikeComPost(rezultatSec);  // nu esxista postarea cu id-ul
@@ -599,6 +602,38 @@ public class App {
                 }
             }
 
+
+
+            if(action.startsWith("-unlike-comment")){
+                utilizator.setParametriUser(user,parola);
+
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if(rezultat == 3) {
+                    // verificam id
+                    if(comentid != null) {
+                        /*se citestc din fisierul cu like-uri liniile*/
+                        List<String> lines;
+                        try {
+                            lines = citirefisier("src/main/java/TemaTest/likeComentariu.csv");
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        // verificam daca exista like cu id-ul dat
+                        int rezultatSec = utilizator.postari.comentariu.likeable.verLike(comentid);
+                        if(rezultatSec == 3) {
+                            // stergem like-ul deoarece el exista
+                            aplicatie.stergeFollowOrLike(comentid,3);
+                            answer.answerUnlikeComPost(rezultatSec);
+                        } else {
+                            answer.answerUnlikeComPost(rezultatSec);  // returneaza 5 nu esxista postarea cu id-ul
+                        }
+                    } else {
+                        answer.answerUnlikeComPost(4); //No identifier was provided
+                    }
+                } else {
+                    answer.answerUnlikeComPost(rezultat);
+                }
+            }
         }
 
     }

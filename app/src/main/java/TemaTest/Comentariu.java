@@ -70,13 +70,13 @@ public class Comentariu {
                     //daca  exista returnam mesajul si valoarea 1
                     for (int i = 0; i < likeda.length; i += 2)
                         if (idcoment.equals(likeda[i]) && likes.equals(likeda[i + 1])) {
-                            return 5; // exista like
+                            return 3; // exista like
                         }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return  3; // nu are like
+            return  5; // nu are like
         }
     };
 }
