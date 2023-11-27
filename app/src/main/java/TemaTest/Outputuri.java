@@ -85,4 +85,60 @@ public class Outputuri {
             System.out.println("{'status':'error','message':'The post identifier to like was not valid'}");
         }
     }
+
+    public void answerUnlike(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 3) {
+            System.out.println("{'status':'ok','message':'Operation executed successfully'}");
+        } else if(val == 4) {
+            System.out.println("{'status':'error','message':'No post identifier to unlike was provided'}");
+        } else if(val == 5) {
+            System.out.println("{'status':'error','message':'The post identifier to unlike was not valid'}");
+        }
+    }
+
+    public void answerComPost(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 3) {
+            System.out.println("{'status':'ok','message':'Comment added successfully'}");
+        } else if(val == 4) {
+            System.out.println("{'status':'error','message':'No text provided'}");
+        } else if(val == 5) {
+            System.out.println("{'status':'error','message':'Comment text length exceeded'}");
+        }
+    }
+
+    public void answerDeleteComPost(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 3) {
+            System.out.println("{'status':'ok','message':'Operation executed successfully'}");
+        } else if(val == 4) {
+            System.out.println("{'status':'error','message':'No identifier was provided'}");
+        } else if(val == 5) {
+            System.out.println("{'status':'error','message':'The identifier was not valid'}");
+        }
+    }
+
+    public void answerLikeComPost(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 3) {
+            System.out.println("{'status':'ok','message':'Operation executed successfully'}");
+        } else if(val == 4) {
+            System.out.println("{'status':'error','message':'No comment identifier to like was provided'}");
+        } else if(val == 5) {
+            System.out.println("{'status':'error','message':'The comment identifier to like was not valid'}");
+        }
+    }
 }

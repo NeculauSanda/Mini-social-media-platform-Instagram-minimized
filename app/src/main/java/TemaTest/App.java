@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class App {
-    
+
     public App() {/* compiled code */
     }
 
@@ -73,11 +73,46 @@ public class App {
         return 5; //postarea are mai mult de 300 de caractere
     }
 
+    public int creatComentPostare(String text, Utilizator utilizator, String id) {
+        if(text == null) {
+            //nu s-a primit niciun text
+            return 4;
+        }
+
+        if(text.length() < 300) {
+            //postarea e buna
+            utilizator.postari.comentariu.textComentariu = text;
+            utilizator.postari.comentariu.introducInFisier(utilizator, id);
+            return 3;
+        }
+        return 5; //postarea are mai mult de 300 de caractere
+    }
+
+    public boolean verUserPost (Utilizator user) {
+        String path = null;
+        path = "src/main/java/TemaTest/post.csv";
+
+        // citim continut fisier
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String linie;
+
+            while ((linie = reader.readLine()) != null) {
+                if (linie.startsWith(user.userName + ",")) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return false;
+    }
+
     public int verificareid(String id, List<String> lines) {
         if(!lines.isEmpty() && Integer.parseInt(id) <= lines.size()) {
             return 3; // SUCCESC
         } else {
-            return 5; // THE IDENTIFIER WAS NOT VALID
+            return 5; // THE IDENTIFIER WAS NOT VALID / NU EXISTA
         }
     }
 
@@ -107,7 +142,7 @@ public class App {
                     String[] user = line.split(splitBy);
 
                     for (int i = 0; i < user.length; i++) {
-                        // daca user-ul cerut exista in baza de date verificam sa vedem daca era deja in followurile user nostru
+                        // daca user-ul cerut exista in baza de date verificam daca era deja in followurile userUL nostru
                         if (follow.equals(user[i]) && (follow != utilizator.userName)) {
                             exist = 1;
                         }
@@ -168,7 +203,7 @@ public class App {
             if(val == 2) {
                 if (ok == 1) {
                     // stergem din fisierul de followeri userul
-                    stergeFollow(follow);
+                    stergeFollowOrLike(follow,1);
                     return 3; //exista deja in followeri, “Operation executed successfully
                 } else {
                     return 5; //nu se gaseste in lista user - ului inseamna ca e deja unfollow
@@ -177,10 +212,18 @@ public class App {
         return 0;
     }
 
-    public void stergeFollow(String follow) {
+    // val == 1 --> sterge follow
+    // val == 2 --> sterge like
+    public void stergeFollowOrLike(String followOrId, int val) {
+        String path = null;
+        if(val == 1) {
+            path = "src/main/java/TemaTest/follow.csv";
+        } else {
+            path = "src/main/java/TemaTest/like.csv";
+        }
         // citim continut fisier
         List<String> lin = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader("src/main/java/TemaTest/follow.csv"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             String linie;
             while ((linie = reader.readLine()) != null) {
                 lin.add(linie);
@@ -194,11 +237,53 @@ public class App {
             List<String> linii = lin;
 
             // Verificam daca linia de șters exista
-            boolean linieGasita = linii.remove(follow + ",");
+            boolean linieGasita = false;
+            if(val == 1) {
+                linieGasita = linii.remove(followOrId + ",");
+            } else {
+                linieGasita = linii.remove(followOrId + "," + "true,");
+            }
 
             if (linieGasita) {
                 // Rescrierea conținutului actualizat înapoi în fișier
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/java/TemaTest/follow.csv"))) {
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
+                    for (String liniesec : linii) {
+                        writer.write(liniesec);
+                        writer.newLine();
+                    }
+                }
+            }
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void stergePost(Utilizator user, Postare text) {
+        String path = null;
+        path = "src/main/java/TemaTest/post.csv";
+
+        // citim continut fisier
+        List<String> lin = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String linie;
+            while ((linie = reader.readLine()) != null) {
+                lin.add(linie);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            // Citirea conținutului actual
+            List<String> linii = lin;
+
+            // Verificam daca linia de șters exista
+            boolean linieGasita = false;
+            linieGasita = linii.remove(user.userName +"," + text.getTextPostare() + ",");
+
+            if (linieGasita) {
+                // Rescrierea conținutului actualizat înapoi în fișier
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
                     for (String liniesec : linii) {
                         writer.write(liniesec);
                         writer.newLine();
@@ -232,10 +317,12 @@ public class App {
         String user = null;
         String parola = null;
         Postare text = new Postare();
+        String comentariu = null;
         String action = null;
         String id = null;
         String follow = null;
-        String idlike = null;
+        String postId = null;
+        String comentid = null;
 
         if(strings == null) {
             System.out.print("Hello world!");
@@ -243,33 +330,7 @@ public class App {
             for (int i = 0; i < strings.length; i++) {
                 //stergem din fisier tot pentru urmatorul test
                 if (strings[i].startsWith("-cleanup-all")) {
-                    try {
-                        PrintWriter writer = new PrintWriter("src/main/java/TemaTest/user.csv");
-                        writer.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    try {
-                        PrintWriter writer = new PrintWriter("src/main/java/TemaTest/post.csv");
-                        writer.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    try {
-                        PrintWriter writer = new PrintWriter("src/main/java/TemaTest/follow.csv");
-                        writer.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    try {
-                        PrintWriter writer = new PrintWriter("src/main/java/TemaTest/like.csv");
-                        writer.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    FunctiiAjutatoare.cleanFile();
                 }
                 action = strings[0];
                 if (strings[i].startsWith("-u")) {
@@ -280,14 +341,17 @@ public class App {
                     }
                 } else if (strings[i].startsWith("-p")) {
                     if(strings[i].startsWith("-post-id '")) {
-                        idlike = FunctiiAjutatoare.extragerePN(strings[i], 9);
+                        postId = FunctiiAjutatoare.extragerePN(strings[i], 9);
                     } else {
                         parola = FunctiiAjutatoare.extragerePN(strings[i], 3);
                     }
                 } else  if(strings[i].startsWith("-text")) {
                     text.setTextPostare(FunctiiAjutatoare.extragerePN(strings[i], 6));
+                    comentariu = FunctiiAjutatoare.extragerePN(strings[i], 6);
                 } else if(strings[i].startsWith("-id ")) {
                     id = FunctiiAjutatoare.extragerePN(strings[i], 4);
+                } else if(strings[i].startsWith("-comment-id")) {
+                    comentid = FunctiiAjutatoare.extragerePN(strings[i], 12);
                 }
             }
 
@@ -336,7 +400,12 @@ public class App {
                         }
 
                         int rezultatSec = aplicatie.verificareid(id, lines);
-                        answer.answerDeletePost(rezultatSec);
+                        if(rezultatSec == 3) {
+                            aplicatie.stergePost(utilizator, text);
+                            answer.answerDeletePost(rezultatSec);
+                        } else {
+                            answer.answerDeletePost(rezultatSec);
+                        }
                     } else {
                         answer.answerDeletePost(4); //No identifier was provided
                     }
@@ -377,7 +446,7 @@ public class App {
                 // verificam sa vedem daca exista utilizatorul/daca e logat
                 int rezultat = aplicatie.verificaUserPost(utilizator);
                 if(rezultat == 3) {
-                    if(idlike != null) {
+                    if(postId != null) {
                         /*se citestc din fisier liniile pentru postari*/
                         List<String> lines;
                         try {
@@ -385,21 +454,27 @@ public class App {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        // verificam daca exista o postare cu id-ul dat
-                        int rezultatSec = aplicatie.verificareid(idlike, lines);
-                        // inseamna ca exista o postare careia ii putem da like
-                        if(rezultatSec == 3) {
-                            // verificam daca postarea are deja like
-                            int likeGood = utilizator.postari.likeable.verLike(idlike);
-                            if(likeGood == 0) {
-                                utilizator.postari.likeable.fisierLikeId(idlike);
-                                answer.answerLike(rezultatSec);
-                            } else if(likeGood == 1) {
-                                answer.answerLike(5);
-                            }
 
+                        // verificam daca user-ul isi da singur like la postare
+                        if(aplicatie.verUserPost(utilizator) == false) {
+                            // verificam daca exista o postare cu id-ul dat
+                            int rezultatSec = aplicatie.verificareid(postId, lines);
+                            // inseamna ca exista o postare careia ii putem da like
+                            if (rezultatSec == 3) {
+                                // verificam daca postarea are deja like
+                                int likeGood = utilizator.postari.likeable.verLike(postId);
+                                if (likeGood == 0) {
+                                    utilizator.postari.likeable.fisierLikeId(postId);
+                                    answer.answerLike(rezultatSec);
+                                } else if (likeGood == 1) {
+                                    answer.answerLike(5);
+                                }
+
+                            } else {
+                                answer.answerLike(rezultatSec);  // nu esxista postarea cu id-ul
+                            }
                         } else {
-                            answer.answerLike(rezultatSec);  // nu esxista postarea cu id-ul
+                            answer.answerLike(5);
                         }
                     } else {
                         answer.answerLike(4); // nu a fost dat id
@@ -408,6 +483,122 @@ public class App {
                     answer.answerLike(rezultat);
                 }
             }
+
+            if(action.startsWith("-unlike-post")){
+                utilizator.setParametriUser(user,parola);
+
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if(rezultat == 3) {
+                    // verificam id
+                    if(postId != null) {
+                        /*se citestc din fisierul cu like-uri liniile*/
+                        List<String> lines;
+                        try {
+                            lines = citirefisier("src/main/java/TemaTest/like.csv");
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        // verificam daca exista like cu id-ul dat
+                        int rezultatSec = utilizator.postari.likeable.verLike(postId);
+                        if(rezultatSec == 1) {
+                            // stergem like-ul deoarece el exista
+                            aplicatie.stergeFollowOrLike(postId,2);
+                            answer.answerUnlike(3);
+                        } else {
+                            answer.answerUnlike(5);  // returneaza 5 nu esxista postarea cu id-ul
+                        }
+                    } else {
+                        answer.answerUnlike(4); //No identifier was provided
+                    }
+                } else {
+                    answer.answerUnlike(rezultat);
+                }
+            }
+
+            if(action.startsWith("-comment-post")){
+                // am setat din nou userul deoarece nu va mai intra in sectiunea "-creat-user"
+                utilizator.setParametriUser(user,parola);
+
+                //verifica daca utilizatorul e in baza de date
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                //daca utilizatorul exista
+                if(rezultat == 3) {
+                    /*se citestc din fisier liniile pentru postari*/
+                    List<String> lines;
+                    try {
+                        lines = citirefisier("src/main/java/TemaTest/post.csv");
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    // verificam daca exista o postare cu id-ul dat
+                    int rezultatSec = aplicatie.verificareid(postId, lines);
+                    // daca am gasit postarea atunci cream comentariu pentru ea
+                    if(rezultatSec == 3) {
+                        int val = aplicatie.creatComentPostare(comentariu, utilizator, postId);
+                        answer.answerComPost(val);
+                    } else {
+                        answer.answerComPost(4);
+                    }
+                } else {
+                    answer.answerComPost(rezultat);
+                }
+
+            }
+
+            if(action.startsWith("-delete-comment-by-id")){
+                utilizator.setParametriUser(user,parola);
+
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if(rezultat == 3) {
+                    // verificam id
+                    if(id != null) {
+                        int rezultatSec = utilizator.postari.comentariu.verComentariu(id,utilizator);
+                        answer.answerDeleteComPost(rezultatSec);
+                    } else {
+                        answer.answerDeleteComPost(4); //No identifier was provided
+                    }
+                } else {
+                    answer.answerDeleteComPost(rezultat);
+                }
+            }
+
+            if(action.startsWith("-like-comment")) {
+                utilizator.setParametriUser(user,parola);
+                // verificam sa vedem daca exista utilizatorul/daca e logat
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if(rezultat == 3) {
+                    if(comentid != null) {
+                        /*se citestc din fisier liniile pentru postari*/
+                        List<String> lines;
+                        try {
+                            lines = citirefisier("src/main/java/TemaTest/comentarii.csv");
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        // verificam daca exista comentariu cu id-ul dat
+                        int rezultatSec = aplicatie.verificareid(comentid, lines);
+                        // inseamna ca exista o postare careia ii putem da like
+                        if (rezultatSec == 3) {
+                            // verificam daca postarea are deja like
+                            int likeGood = utilizator.postari.comentariu.likeable.verLike(comentid);
+                            if (likeGood == 3) {
+                                //adaugam likeul la comentariu
+                                utilizator.postari.comentariu.likeable.fisierLikeId(comentid);
+                                answer.answerLikeComPost(rezultatSec);
+                            } else {
+                                answer.answerLikeComPost(likeGood);
+                            }
+                        } else {
+                            answer.answerLikeComPost(rezultatSec);  // nu esxista postarea cu id-ul
+                        }
+                    } else {
+                        answer.answerLikeComPost(4); // nu a fost dat id
+                    }
+                } else {
+                    answer.answerLikeComPost(rezultat);
+                }
+            }
+
         }
 
     }

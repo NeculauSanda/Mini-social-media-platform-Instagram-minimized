@@ -22,6 +22,7 @@ public class Utilizator {
         this.setParola(parola);
         this.userName = name;
         this.postari = new Postare();
+        this.postari.comentariu = new Comentariu();
     }
 
     public void setParola(String parola) {
