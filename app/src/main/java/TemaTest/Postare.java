@@ -42,16 +42,16 @@ public class Postare {
     // facem un fisier cu likeruri unde se tine id posterii + valoarea de LIKE = TRUE
     Likeable likeable = new Likeable() {
         @Override
-        public void fisierLikeId(String id) {
+        public void fisierLikeId(String id, Utilizator user) {
             try (FileWriter fw = new FileWriter("src/main/java/TemaTest/like.csv", true);
                  BufferedWriter bw = new BufferedWriter(fw);
                  PrintWriter out = new PrintWriter(bw)) {
-                out.print(id + "," + "true,");
+                out.print(user.userName + "," +id + "," + "true,");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        public int verLike(String idlike) {
+        public int verLike(String idlike, Utilizator user) {
             String line;
             String likes = "true";
             try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/like.csv"))) {
@@ -59,10 +59,11 @@ public class Postare {
                 while ((line = br.readLine()) != null) {
                     String[] likeda = line.split(splitBy);
                     //daca  exista returnam mesajul si valoarea 1
-                    for (int i = 0; i < likeda.length; i += 2)
-                        if (idlike.equals(likeda[i]) && likes.equals(likeda[i + 1])) {
+                    for (int i = 0; i < likeda.length; i += 3) {
+                        if (user.userName.equals(likeda[i]) && idlike.equals(likeda[i + 1]) && likes.equals(likeda[i + 2])) {
                             return 1; // exista like
                         }
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -80,8 +81,8 @@ public class Postare {
                 while ((line = br.readLine()) != null) {
                     String[] likeda = line.split(splitBy);
                     //daca  exista returnam mesajul si valoarea 1
-                    for (int i = 0; i < likeda.length; i += 2)
-                        if (idlike.equals(likeda[i]) && likes.equals(likeda[i + 1])) {
+                    for (int i = 0; i < likeda.length; i += 3)
+                        if (idlike.equals(likeda[i+1]) && likes.equals(likeda[i + 2])) {
                             contorlike++;
                         }
                 }
@@ -92,17 +93,21 @@ public class Postare {
         }
     };
 
-    // varificam daca exista postare cu id-ul at
+    // varificam daca exista postare cu id-ul dat
     public int verPost(String idpost) {
         String line;
         int contor = 0;
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
             String splitBy = ",";
             while ((line = br.readLine()) != null) {
-                contor++;
-                if (contor == Integer.parseInt(idpost)) {
-                    return 1; // exista postarea cu id- ul respectiv
+
+                for(int i = 0; i < line.length(); i+=2) {
+                    contor++;
+                    if (contor == Integer.parseInt(idpost)) {
+                        return 1; // exista postarea cu id- ul respectiv
+                    }
                 }
+
             }
         } catch (IOException e) {
             e.printStackTrace();

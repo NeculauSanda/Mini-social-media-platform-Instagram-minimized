@@ -60,7 +60,7 @@ public class Comentariu {
 
     Likeable likeable = new Likeable() {
         @Override
-        public void fisierLikeId(String id) {
+        public void fisierLikeId(String id, Utilizator user) {
             try (FileWriter fw = new FileWriter("src/main/java/TemaTest/likeComentariu.csv", true);
                  BufferedWriter bw = new BufferedWriter(fw);
                  PrintWriter out = new PrintWriter(bw)) {
@@ -69,7 +69,7 @@ public class Comentariu {
                 e.printStackTrace();
             }
         }
-        public int verLike(String idcoment) {
+        public int verLike(String idcoment, Utilizator user) {
             String line;
             String likes = "true";
             try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/likeComentariu.csv"))) {

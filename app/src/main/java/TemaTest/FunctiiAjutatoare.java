@@ -3,7 +3,9 @@ package TemaTest;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 public class FunctiiAjutatoare {
@@ -152,7 +154,7 @@ public class FunctiiAjutatoare {
 
     // numarul de postari din fisier --> val = 1
     // numarul de comentari din fisier --> val = 2
-    static public int numberpost(int val) {
+     public static int numberpost(int val) {
         int contor = 0;
         try (BufferedReader brs = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
             String linestwo;
@@ -171,16 +173,16 @@ public class FunctiiAjutatoare {
         return contor;
     }
 
+    // region
     public static void verificaAfiseazaComLike(Utilizator user, String id) {
-        int one = 0; // ajuta atunci can nu exista comentari si like uri sa puna 0 la output
+        int one = 0; // ajuta atunci cand nu exista postarea si afiseaza outputul corect
         int contorid = 0;  // determina id-ul postarii
 
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         Date date = new Date();
         String currentDateAsString = dateFormat.format(date);
 
-        // afisam mai intai postarea
-        System.out.print("{ 'status' : 'ok', 'message' : [");
+        // afisam mai intai postarea daca este gasita
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
             String lines;
             String split = ",";
@@ -189,6 +191,10 @@ public class FunctiiAjutatoare {
                 String[] linie = lines.split(split);
                 // am ajuns la postare pe care o vrem
                 if(contorid == Integer.parseInt(id)) {
+                    one++;
+                    if(one == 1){
+                        System.out.print("{ 'status' : 'ok', 'message' : [");
+                    }
                         System.out.print("{'post_text' : '" + linie[contorid] + "', 'post_date' :'" + currentDateAsString + "', 'username' : '" + linie[contorid-1] + "', ");
                         System.out.print("'number_of_likes' : '" + user.postari.likeable.numberlike(id) + "', ");
                 }
@@ -199,8 +205,6 @@ public class FunctiiAjutatoare {
         }
 
         // verificam daca exista comentarii
-//        int numarcomentarii = numberpost(2);
-
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/comentarii.csv"))) {
             String lines;
             String split = ",";
@@ -210,12 +214,11 @@ public class FunctiiAjutatoare {
                 for (int i = linie.length - 1; i >= 0; i -= 3) {
                     // afisam comentariile in ordine inversa si numarul de likeuri pe comentariul respecitv
                     System.out.print("'comments' : [{'comment_id' : '" + linie[i-1] + "' , 'comment_text' : '" + linie[i] + "' , 'comment_date':'" + currentDateAsString + "', 'username' : '" + linie[i-2] + "', 'number_of_likes' : '" + user.postari.comentariu.likeable.numberlike(linie[i-1]) + "'}] }] }");
-//                    numarcomentarii--;
 
                 }
             }
             if(one == 0) {
-                System.out.print("'comments' : [{'comment_id' : '" + 0 + "' , 'comment_text' : '" + 0 + "' , 'post_date':'" + currentDateAsString + "', 'username' : '" + 0 + "', 'number_of_likes' : '" + 0 + "'}] }] }");
+                System.out.print("{ 'status' : 'error', 'message' : 'The post identifier was not valid'}");
             }
 
         } catch (IOException e) {
@@ -267,4 +270,90 @@ public class FunctiiAjutatoare {
         }
         System.out.print(" ]}");
     }
+
+    public static String[] postariOrdineLike() {
+        String[] ordine = new String[numberpost(1) + 1];
+        int[] vallike = new int[numberpost(1) + 1];
+
+        try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/like.csv"))) {
+            String lines;
+            String splitBys = ",";
+            while ((lines = br.readLine()) != null) {
+                String[] linie = lines.split(splitBys);
+                for(int j = 0; j < linie.length; j+=3){
+                    vallike[Integer.parseInt(linie[j+1])]++;
+                }
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        //trecem valorile in vector unde punem id postare si numarul de like-uri
+        for (int i = 1; i <= numberpost(1); i++){
+            ordine[i] = i + "," + vallike[i];
+        }
+
+        int maxlike = 0;
+        String valintermediar = null;
+        // ordonam vectorul de like-uri in functie de like-uri
+        for(int i = 1; i <= numberpost(1); i++){
+            String splitBy = ",";
+            String[] like = ordine[i].split(splitBy);
+            maxlike = Integer.parseInt(like[1]);
+            for(int j = i + 1; j <= numberpost(1); j++){
+                String split = ",";
+                String[] liketwo = ordine[j].split(split);
+                if(maxlike < Integer.parseInt(liketwo[1])) {
+                    maxlike = Integer.parseInt(liketwo[1]);
+                    valintermediar = ordine[i];
+                    ordine[i] = ordine[j];
+                    ordine[j] = valintermediar;
+                }
+            }
+        }
+        return ordine;
+    }
+
+    public static void afisaremostlikepost(Utilizator user) {
+        int numberpost = numberpost(1);
+        int ones = 0;
+        String[] ordine = postariOrdineLike();
+
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        Date date = new Date();
+        String currentDateAsString = dateFormat.format(date);
+
+        for(int i = 1; i <= numberpost; i++){
+
+            int contor = 0;
+            String splitBy = ",";
+            String[] linie = ordine[i].split(splitBy);
+
+            try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
+                String splitBys = ",";
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String[] lines = line.split(splitBys);
+                    for(int j = 0; j < lines.length; j+=2) {
+                        contor++;
+                        ones++;
+                        if(ones == 1) {
+                            System.out.print("{ 'status' : 'ok', 'message' : [");
+                        }
+                        if (contor == Integer.parseInt(linie[0]) && contor != numberpost) {
+                            System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j+1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_likes' : '" + linie[1] + "' },");
+                        } else if(contor == Integer.parseInt(linie[0]) && contor == numberpost) {
+                            System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j+1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_likes' : '" + linie[1] + "' } ]}");
+                        }
+                    }
+
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

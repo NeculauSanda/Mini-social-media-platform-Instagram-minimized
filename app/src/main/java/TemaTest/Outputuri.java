@@ -183,8 +183,6 @@ public class Outputuri {
             System.out.println("{'status':'error','message':'You need to be authenticated'}");
         } else if(val == 4) {
             System.out.println("{ 'status' : 'error', 'message' : 'No post identifier was provided'}");
-        } else if(val == 5) {
-            System.out.println("{ 'status' : 'error', 'message' : 'The post identifier was not valid'}");
         }
     }
 
