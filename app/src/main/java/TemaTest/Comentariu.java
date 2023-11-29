@@ -31,7 +31,9 @@ public class Comentariu {
         }
     }
 
-    public int verComentariu(String idcoment, Utilizator user) {
+    // val == 1 ->verifica comentariu si dupa user si id
+    // val == 2 -> verifica comentariu doar dupa id
+    public int verComentariu(String idcoment, Utilizator user, int val) {
         String line;
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/comentarii.csv"))) {
             String splitBy = ",";
@@ -39,8 +41,15 @@ public class Comentariu {
                 String[] likeda = line.split(splitBy);
                 //daca  exista returnam mesajul si valoarea 1
                 for (int i = 0; i < likeda.length; i += 3)
-                    if (user.userName.equals(likeda[i]) && idcoment.equals(likeda[i + 1])) {
-                        return 3; // exista comentariu
+                    if (val == 1) {
+                        if (user.userName.equals(likeda[i]) && idcoment.equals(likeda[i + 1])) {
+                            return 3; // exista comentariu
+                        }
+                    } else if(val == 2) {
+                        // verifica doar dupa id
+                        if (idcoment.equals(likeda[i + 1])) {
+                            return 3; // exista comentariu
+                        }
                     }
             }
         } catch (IOException e) {
@@ -77,6 +86,27 @@ public class Comentariu {
                 e.printStackTrace();
             }
             return  5; // nu are like
+        }
+
+        @Override
+        public int numberlike(String idlike) {
+            String line;
+            String likes = "true";
+            int contorlike = 0;
+            try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/likeComentariu.csv"))) {
+                String splitBy = ",";
+                while ((line = br.readLine()) != null) {
+                    String[] likeda = line.split(splitBy);
+                    //daca  exista returnam mesajul si valoarea 1
+                    for (int i = 0; i < likeda.length; i += 2)
+                        if (idlike.equals(likeda[i]) && likes.equals(likeda[i + 1])) {
+                            contorlike++;
+                        }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return  contorlike;
         }
     };
 }

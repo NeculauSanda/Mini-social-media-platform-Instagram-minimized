@@ -155,4 +155,48 @@ public class Outputuri {
             System.out.println("{'status':'error','message':'The comment identifier to unlike was not valid'}");
         }
     }
+
+    public void answerfolowing(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        }
+    }
+
+    public void answerfolowingpost(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 4) {
+            System.out.println("{ 'status' : 'error', 'message' : 'No username to list posts was provided'}");
+        } else if(val == 5) {
+            System.out.println("{ 'status' : 'error', 'message' : 'The username to list posts was not valid'}");
+        }
+    }
+
+    public void answerpostdetails(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 4) {
+            System.out.println("{ 'status' : 'error', 'message' : 'No post identifier was provided'}");
+        } else if(val == 5) {
+            System.out.println("{ 'status' : 'error', 'message' : 'The post identifier was not valid'}");
+        }
+    }
+
+    public void answeregion16(int val) {
+        if(val == 2) {
+            System.out.println("{'status':'error','message':'Login failed'}");
+        } else if(val == 1) {
+            System.out.println("{'status':'error','message':'You need to be authenticated'}");
+        } else if(val == 4) {
+            System.out.println("{ 'status' : 'error', 'message' : 'No username to list followers was provided'}");
+        } else if(val == 5) {
+            System.out.println("{ 'status' : 'error', 'message' : 'The username to list followers was not valid'}");
+        }
+    }
 }

@@ -71,11 +71,11 @@ public class Utilizator {
         }
     }
 
-    public void introducInFisierFolloweri(String user) {
+    public void introducInFisierFolloweri(String user, Utilizator userparinte) {
         try (FileWriter fw = new FileWriter("src/main/java/TemaTest/follow.csv", true);
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter out = new PrintWriter(bw)) {
-             out.print(user + ",");
+             out.print(userparinte.userName + "," + user + ",");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -69,21 +69,40 @@ public class Postare {
             }
             return  0; // nu are like
         }
+
+        @Override
+        public int numberlike(String idlike) {
+            String line;
+            String likes = "true";
+            int contorlike = 0;
+            try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/like.csv"))) {
+                String splitBy = ",";
+                while ((line = br.readLine()) != null) {
+                    String[] likeda = line.split(splitBy);
+                    //daca  exista returnam mesajul si valoarea 1
+                    for (int i = 0; i < likeda.length; i += 2)
+                        if (idlike.equals(likeda[i]) && likes.equals(likeda[i + 1])) {
+                            contorlike++;
+                        }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return  contorlike;
+        }
     };
 
     // varificam daca exista postare cu id-ul at
-    public int verPost(String idlike) {
+    public int verPost(String idpost) {
         String line;
-        String likes = "true";
+        int contor = 0;
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
             String splitBy = ",";
             while ((line = br.readLine()) != null) {
-                String[] likeda = line.split(splitBy);
-                //daca  exista returnam mesajul si valoarea 1
-                for (int i = 0; i < likeda.length; i += 2)
-                    if (idlike.equals(likeda[i]) && likes.equals(likeda[i + 1])) {
-                        return 1; // exista like
-                    }
+                contor++;
+                if (contor == Integer.parseInt(idpost)) {
+                    return 1; // exista postarea cu id- ul respectiv
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
