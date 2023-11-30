@@ -359,16 +359,16 @@ public class App {
     }
 
     public static void main(java.lang.String[] strings) {
-        //citirea comenzi primite terminal
-        String user = null;
-        String parola = null;
-        Postare text = new Postare();
-        String comentariu = null;
-        String action = null;
+        //citirea comenzilor primite in terminal
+        String user = null; // nume user
+        String parola = null; // parola
+        Postare text = new Postare(); // text postare
+        String comentariu = null;  // text comentariu
+        String action = null;  //actiunea primita
         String id = null;
-        String follow = null;
-        String postId = null;
-        String comentid = null;
+        String follow = null;  // nume follow
+        String postId = null;  // id postare
+        String comentid = null; // id comentariu
 
         if(strings == null) {
             System.out.print("Hello world!");
@@ -403,7 +403,7 @@ public class App {
 
             Utilizator utilizator = new Utilizator(); // o instanta a utilizatorului
             App aplicatie = new App(); // aplicatia noastra
-            Outputuri answer = new Outputuri();
+            Outputuri answer = new Outputuri(); // outputuri
 
             if (action.startsWith("-create-user")) {
                 int valoare;
