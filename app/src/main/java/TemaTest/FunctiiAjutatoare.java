@@ -3,10 +3,7 @@ package TemaTest;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class FunctiiAjutatoare {
 
@@ -156,6 +153,12 @@ public class FunctiiAjutatoare {
     // numarul de comentari din fisier --> val = 2
      public static int numberpost(int val) {
         int contor = 0;
+        String path = null;
+        if(val == 1) {
+            path = "src/main/java/TemaTest/post.csv";
+        } else if(val == 2) {
+            path = "src/main/java/TemaTest/comentarii.csv";
+        }
         try (BufferedReader brs = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
             String linestwo;
             String splitBystwo = ",";
@@ -166,6 +169,21 @@ public class FunctiiAjutatoare {
                 } else if(val == 2) {
                     contor = linietwo.length / 3;
                 }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return contor;
+    }
+
+    public  static int numarUser(){
+        int contor = 0;
+        try (BufferedReader brs = new BufferedReader(new FileReader("src/main/java/TemaTest/user.csv"))) {
+            String linestwo;
+            String splitBystwo = ",";
+            while ((linestwo = brs.readLine()) != null) {
+                String[] linietwo = linestwo.split(splitBystwo);
+                contor = linietwo.length / 2;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -271,17 +289,28 @@ public class FunctiiAjutatoare {
         System.out.print(" ]}");
     }
 
-    public static String[] postariOrdineLike() {
+    // val == 1 -> face un vector de stringuri cu nr de like-uri pe postare / region 17
+    // val == 2 -> face un vector de stringuri cu nr de comentarii pe postare / region 18
+    public static String[] postariOrdineLikeOrComm(int val ) {
         String[] ordine = new String[numberpost(1) + 1];
         int[] vallike = new int[numberpost(1) + 1];
-
-        try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/like.csv"))) {
+        String path = null;
+        if (val == 1) {
+            path = "src/main/java/TemaTest/like.csv";
+        } else if(val == 2) {
+            path = "src/main/java/TemaTest/comentarii.csv";
+        }
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String lines;
             String splitBys = ",";
             while ((lines = br.readLine()) != null) {
                 String[] linie = lines.split(splitBys);
                 for(int j = 0; j < linie.length; j+=3){
-                    vallike[Integer.parseInt(linie[j+1])]++;
+                    if(val == 1) {
+                        vallike[Integer.parseInt(linie[j + 1])]++;
+                    } else if(val == 2) {
+                        vallike[Integer.parseInt(linie[j + 1])]++;
+                    }
                 }
             }
 
@@ -315,16 +344,18 @@ public class FunctiiAjutatoare {
         return ordine;
     }
 
-    public static void afisaremostlikepost(Utilizator user) {
+    // val == 1 most like post / region 17
+    // val == 2 most comment post / region 18
+    public static void afisaremostlikepost(Utilizator user, int val) {
         int numberpost = numberpost(1);
         int ones = 0;
-        String[] ordine = postariOrdineLike();
+        String[] ordine = postariOrdineLikeOrComm(val);
 
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         Date date = new Date();
         String currentDateAsString = dateFormat.format(date);
 
-        for(int i = 1; i <= numberpost; i++){
+        for(int i = 1; i <= numberpost && i <= 5; i++){
 
             int contor = 0;
             String splitBy = ",";
@@ -341,10 +372,18 @@ public class FunctiiAjutatoare {
                         if(ones == 1) {
                             System.out.print("{ 'status' : 'ok', 'message' : [");
                         }
-                        if (contor == Integer.parseInt(linie[0]) && contor != numberpost) {
-                            System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j+1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_likes' : '" + linie[1] + "' },");
-                        } else if(contor == Integer.parseInt(linie[0]) && contor == numberpost) {
-                            System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j+1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_likes' : '" + linie[1] + "' } ]}");
+                        if(val == 1) {
+                            if (contor == Integer.parseInt(linie[0]) && contor != numberpost) {
+                                System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j + 1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_likes' : '" + linie[1] + "' },");
+                            } else if (contor == Integer.parseInt(linie[0]) && contor == numberpost) {
+                                System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j + 1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_likes' : '" + linie[1] + "' } ]}");
+                            }
+                        } else if(val == 2) {
+                            if (contor == Integer.parseInt(linie[0]) && contor != numberpost) {
+                                System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j + 1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_comments' : '" + linie[1] + "' },");
+                            } else if (contor == Integer.parseInt(linie[0]) && contor == numberpost) {
+                                System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j + 1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_comments' : '" + linie[1] + "' }]}");
+                            }
                         }
                     }
 
@@ -352,6 +391,163 @@ public class FunctiiAjutatoare {
 
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    // determinam nr followeri per user / region 19
+    public static String[] postariOrdineFollow() {
+        String[] ordine = new String[numarUser() + 1];
+        int[] vallike = new int[numarUser() + 1];
+        String path = null;
+        path = "src/main/java/TemaTest/follow.csv";
+
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+            String lines;
+            String splitBys = ",";
+            while ((lines = br.readLine()) != null) {
+                String[] linie = lines.split(splitBys);
+                for(int j = 0; j < linie.length; j+=2){
+                    int index = 0;
+                    String lastcaracter = String.valueOf(linie[j + 1].charAt(linie[j+1].length()-1));
+                    if(lastcaracter.equals("t")) {
+                        index = 1;
+                    } else {
+                        index = Integer.parseInt(lastcaracter);
+                    }
+                    vallike[index]++;
+                }
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        //trecem valorile in vector unde punem id postare si numarul de like-uri
+        for (int i = 1; i <= numarUser(); i++){
+            if(i == 1) {
+                ordine[i] = "test" + "," + vallike[i];
+            } else {
+                ordine[i] = "test" + i + "," + vallike[i];
+            }
+        }
+
+        int maxfollow = 0;
+        String valintermediar = null;
+        // ordonam vectorul de like-uri in functie de like-uri
+        for(int i = 1; i <= numarUser(); i++){
+            String splitBy = ",";
+            String[] follow = ordine[i].split(splitBy);
+            maxfollow = Integer.parseInt(follow[1]);
+            for(int j = i + 1; j <= numarUser(); j++){
+                String split = ",";
+                String[] liketwo = ordine[j].split(split);
+                if(maxfollow < Integer.parseInt(liketwo[1])) {
+                    maxfollow = Integer.parseInt(liketwo[1]);
+                    valintermediar = ordine[i];
+                    ordine[i] = ordine[j];
+                    ordine[j] = valintermediar;
+                }
+            }
+        }
+        return ordine;
+    }
+
+    public static void afisareMostFollowed() {
+        String[] ordine = postariOrdineFollow();
+        int ones = 0;
+        for (int i = 1; i <= numarUser() && i <= 5; i++) {
+            ones++;
+            String splitBy = ",";
+            String[] linie = ordine[i].split(splitBy);
+
+            if (ones == 1) {
+                System.out.print("{ 'status' : 'ok', 'message' : [");
+            }
+            if (i == 5 || i == numarUser()) {
+                System.out.print("{'username' : '" + linie[0] + "','number_of_followers' : '" + linie[1] + "' } ]}");
+            } else {
+                System.out.print("{'username' : '" + linie[0] + "','number_of_followers' : '" + linie[1] + "' },");
+            }
+        }
+    }
+
+    // determinare nr like-uri postare + nr.like comment postare / region 20
+    public static String[] nrLikeComPost(){
+        String[] ordine = postariOrdineLikeOrComm(1);
+        int[] vallike = new int[numberpost(1) + 1];
+        String path = null;
+        int contorcoment = numberpost(2);
+        path = "src/main/java/TemaTest/comentarii.csv";
+
+
+        try (BufferedReader brs = new BufferedReader(new FileReader("src/main/java/TemaTest/likeComentariu.csv"))) {
+            String linestwo;
+            String splitBy = ",";
+            while ((linestwo = brs.readLine()) != null) {
+                String[] linietwo = linestwo.split(splitBy);
+                for(int j = 0; j < linietwo.length; j+=3){
+                    vallike[Integer.parseInt(linietwo[j+1])]++;
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // actualizam vectorul cu like-uri ale postraii la care adugam numarul de like-uri ale comentariilor
+        for (int i = 1; i < numberpost(1); i++) {
+            String splitBy = ",";
+            String[] like = ordine[i].split(splitBy);
+            if(Objects.equals(Integer.parseInt(like[0]), i)) {
+                vallike[i] = vallike[i] + Integer.parseInt(like[1]);
+                ordine[i] = i + "," + vallike[i];
+            }
+        }
+
+        String intermadiar = null;
+        for(int i = 1; i <= numberpost(1); i++){
+            String maxval = ordine[i];
+            for(int j = i+1; j <= numberpost(1); j++) {
+                String splitBy = ",";
+                String[] like = maxval.split(splitBy);
+                String[] liketwo = ordine[j].split(splitBy);
+                if(Integer.parseInt(like[1]) < Integer.parseInt(liketwo[1])) {
+                    intermadiar = ordine[i];
+                    ordine[i] = ordine[j];
+                    ordine[j] = intermadiar;
+                } else if((Integer.parseInt(like[1]) == Integer.parseInt(liketwo[1])) && Integer.parseInt(like[0]) > Integer.parseInt(liketwo[0])) {
+                    intermadiar = ordine[i];
+                    ordine[i] = ordine[j];
+                    ordine[j] = intermadiar;
+                }
+            }
+
+        }
+
+        return ordine;
+    }
+
+    // Afisarea primelor 5 Most liked Users
+    public static void afisareRegion20() {
+        String[] ordine = nrLikeComPost();
+        int ones = 0;
+        for (int i = 1; i <= numberpost(1) && i <= 5; i++) {
+            ones++;
+            String splitBy = ",";
+            String[] like = ordine[i].split(splitBy);
+            String test = null;
+            if(Integer.parseInt(like[0]) == 1) {
+                test = "test";
+            } else {
+                test = "test" + Integer.parseInt(like[0]);
+            }
+            if(ones == 1) {
+                System.out.print("{ 'status' : 'ok', 'message' : [");
+            }
+            if (i == 5 || i == numarUser()) {
+                System.out.print("{'username' : '" + test + "','number_of_likes' : '" + like[1] + "' }]}");
+            } else {
+                System.out.print("{'username' : '" + test + "','number_of_likes' : '" + like[1] + "' },");
             }
         }
     }

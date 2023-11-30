@@ -1,6 +1,7 @@
 package TemaTest;
 
 import java.io.*;
+import java.util.Objects;
 
 public class Comentariu {
 
@@ -25,7 +26,7 @@ public class Comentariu {
         try (FileWriter fw = new FileWriter("src/main/java/TemaTest/comentarii.csv", true);
              BufferedWriter bw = new BufferedWriter(fw);
              PrintWriter out = new PrintWriter(bw)) {
-            out.print(user.userName + "," + id + "," + user.postari.comentariu.getTextComentariu() + "\n");
+            out.print(user.userName + "," + id + "," + user.postari.comentariu.getTextComentariu() + ",");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -39,18 +40,21 @@ public class Comentariu {
             String splitBy = ",";
             while ((line = br.readLine()) != null) {
                 String[] likeda = line.split(splitBy);
+                int contor = 0;
                 //daca  exista returnam mesajul si valoarea 1
-                for (int i = 0; i < likeda.length; i += 3)
+                for (int i = 0; i < likeda.length; i += 3) {
+                    contor++;
                     if (val == 1) {
                         if (user.userName.equals(likeda[i]) && idcoment.equals(likeda[i + 1])) {
                             return 3; // exista comentariu
                         }
-                    } else if(val == 2) {
+                    } else if (val == 2) {
                         // verifica doar dupa id
-                        if (idcoment.equals(likeda[i + 1])) {
+                        if (contor ==Integer.parseInt(idcoment)) {
                             return 3; // exista comentariu
                         }
                     }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -64,11 +68,12 @@ public class Comentariu {
             try (FileWriter fw = new FileWriter("src/main/java/TemaTest/likeComentariu.csv", true);
                  BufferedWriter bw = new BufferedWriter(fw);
                  PrintWriter out = new PrintWriter(bw)) {
-                out.print(id + "," + "true,");
+                out.print( user.userName + "," + id + "," + "true,");
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
         public int verLike(String idcoment, Utilizator user) {
             String line;
             String likes = "true";
@@ -77,8 +82,8 @@ public class Comentariu {
                 while ((line = br.readLine()) != null) {
                     String[] likeda = line.split(splitBy);
                     //daca  exista returnam mesajul si valoarea 1
-                    for (int i = 0; i < likeda.length; i += 2)
-                        if (idcoment.equals(likeda[i]) && likes.equals(likeda[i + 1])) {
+                    for (int i = 0; i < likeda.length; i += 3)
+                        if (Objects.equals(user.userName,likeda[i]) && Objects.equals(idcoment, likeda[i+1]) && Objects.equals(likeda[i+2], likes)) {
                             return 3; // exista like
                         }
                 }
@@ -98,8 +103,8 @@ public class Comentariu {
                 while ((line = br.readLine()) != null) {
                     String[] likeda = line.split(splitBy);
                     //daca  exista returnam mesajul si valoarea 1
-                    for (int i = 0; i < likeda.length; i += 2)
-                        if (idlike.equals(likeda[i]) && likes.equals(likeda[i + 1])) {
+                    for (int i = 0; i < likeda.length; i += 3)
+                        if (idlike.equals(likeda[i+1]) && likes.equals(likeda[i + 2])) {
                             contorlike++;
                         }
                 }

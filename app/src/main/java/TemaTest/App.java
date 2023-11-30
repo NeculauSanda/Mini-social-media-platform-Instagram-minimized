@@ -396,7 +396,7 @@ public class App {
                     comentariu = FunctiiAjutatoare.extragerePN(strings[i], 6);
                 } else if (strings[i].startsWith("-id ")) {
                     id = FunctiiAjutatoare.extragerePN(strings[i], 4);
-                } else if (strings[i].startsWith("-comment-id")) {
+                } else if (strings[i].startsWith("-comment-id ")) {
                     comentid = FunctiiAjutatoare.extragerePN(strings[i], 12);
                 }
             }
@@ -479,7 +479,7 @@ public class App {
                 }
             }
 
-            if (action.startsWith("-like-post")) {
+            if (action.equals("-like-post")) {
                 utilizator.setParametriUser(user, parola);
                 // verificam sa vedem daca exista utilizatorul/daca e logat
                 int rezultat = aplicatie.verificaUserPost(utilizator);
@@ -514,7 +514,7 @@ public class App {
                 }
             }
 
-            if (action.startsWith("-unlike-post")) {
+            if (action.equals("-unlike-post")) {
                 utilizator.setParametriUser(user, parola);
 
                 int rezultat = aplicatie.verificaUserPost(utilizator);
@@ -538,7 +538,7 @@ public class App {
                 }
             }
 
-            if (action.startsWith("-comment-post")) {
+            if (action.equals("-comment-post")) {
                 // am setat din nou userul deoarece nu va mai intra in sectiunea "-creat-user"
                 utilizator.setParametriUser(user, parola);
 
@@ -561,7 +561,7 @@ public class App {
 
             }
 
-            if (action.startsWith("-delete-comment-by-id")) {
+            if (action.equals("-delete-comment-by-id")) {
                 utilizator.setParametriUser(user, parola);
 
                 int rezultat = aplicatie.verificaUserPost(utilizator);
@@ -578,7 +578,7 @@ public class App {
                 }
             }
 
-            if (action.startsWith("-like-comment")) {
+            if (action.equals("-like-comment")) {
                 utilizator.setParametriUser(user, parola);
                 // verificam sa vedem daca exista utilizatorul/daca e logat
                 int rezultat = aplicatie.verificaUserPost(utilizator);
@@ -609,7 +609,7 @@ public class App {
             }
 
 
-            if (action.startsWith("-unlike-comment")) {
+            if (action.equals("-unlike-comment")) {
                 utilizator.setParametriUser(user, parola);
 
                 int rezultat = aplicatie.verificaUserPost(utilizator);
@@ -634,7 +634,7 @@ public class App {
             }
 
 
-            if (action.startsWith("-get-followings-posts")) {
+            if (action.equals("-get-followings-posts")) {
                 utilizator.setParametriUser(user, parola);
 
                 int rezultat = aplicatie.verificaUserPost(utilizator);
@@ -645,7 +645,7 @@ public class App {
                 }
             }
 
-            if (action.startsWith("-get-user-posts")) {
+            if (action.equals("-get-user-posts")) {
                 utilizator.setParametriUser(user, parola);
 
                 int rezultat = aplicatie.verificaUserPost(utilizator);
@@ -713,7 +713,40 @@ public class App {
 
                 int rezultat = aplicatie.verificaUserPost(utilizator);
                 if (rezultat == 3) {
-                    FunctiiAjutatoare.afisaremostlikepost(utilizator);
+                    FunctiiAjutatoare.afisaremostlikepost(utilizator, 1);
+                } else {
+                    answer.answeregion16(rezultat);
+                }
+            }
+
+            if(action.equals("-get-most-commented-posts")) {
+                utilizator.setParametriUser(user, parola);
+
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if (rezultat == 3) {
+                    FunctiiAjutatoare.afisaremostlikepost(utilizator, 2);
+                } else {
+                    answer.answeregion16(rezultat);
+                }
+            }
+
+            if(action.equals("-get-most-followed-users")) {
+                utilizator.setParametriUser(user, parola);
+
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if (rezultat == 3) {
+                    FunctiiAjutatoare.afisareMostFollowed();
+                } else {
+                    answer.answeregion16(rezultat);
+                }
+            }
+
+            if(action.equals("-get-most-liked-users")) {
+                utilizator.setParametriUser(user, parola);
+
+                int rezultat = aplicatie.verificaUserPost(utilizator);
+                if (rezultat == 3) {
+                     FunctiiAjutatoare.afisareRegion20();
                 } else {
                     answer.answeregion16(rezultat);
                 }

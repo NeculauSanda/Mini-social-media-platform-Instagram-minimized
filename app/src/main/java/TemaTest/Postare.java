@@ -51,6 +51,7 @@ public class Postare {
                 e.printStackTrace();
             }
         }
+
         public int verLike(String idlike, Utilizator user) {
             String line;
             String likes = "true";
