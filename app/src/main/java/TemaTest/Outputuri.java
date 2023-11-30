@@ -4,6 +4,7 @@ public class Outputuri {
     Outputuri(){
     }
 
+    // region 1
     public void answerUser(int val) {
         if(val == 2) {
             System.out.println("{'status':'ok','message':'User created successfully'}");
@@ -16,6 +17,7 @@ public class Outputuri {
         }
     }
 
+    // region 2
     public void answerPost(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -30,6 +32,7 @@ public class Outputuri {
         }
     }
 
+    // Region 3
     public void answerDeletePost(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -44,6 +47,7 @@ public class Outputuri {
         }
     }
 
+    // Region 4
     public void answerFollow(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -58,6 +62,7 @@ public class Outputuri {
         }
     }
 
+    // Region 5
     public void answerUnfollow(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -72,6 +77,7 @@ public class Outputuri {
         }
     }
 
+    // Region 6
     public void answerLike(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -86,6 +92,7 @@ public class Outputuri {
         }
     }
 
+    //Region 7
     public void answerUnlike(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -100,6 +107,7 @@ public class Outputuri {
         }
     }
 
+    //Region 13
     public void answerComPost(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -114,6 +122,7 @@ public class Outputuri {
         }
     }
 
+    //Region 14
     public void answerDeleteComPost(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -128,6 +137,7 @@ public class Outputuri {
         }
     }
 
+    //Region 8
     public void answerLikeComPost(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -142,6 +152,7 @@ public class Outputuri {
         }
     }
 
+    //Region 9
     public void answerUnlikeComPost(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -156,6 +167,7 @@ public class Outputuri {
         }
     }
 
+    //Region 10
     public void answerfolowing(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -164,6 +176,7 @@ public class Outputuri {
         }
     }
 
+    //Region 11
     public void answerfolowingpost(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -176,6 +189,7 @@ public class Outputuri {
         }
     }
 
+    //Region 12
     public void answerpostdetails(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");
@@ -186,6 +200,7 @@ public class Outputuri {
         }
     }
 
+    // Region 16-20
     public void answeregion16(int val) {
         if(val == 2) {
             System.out.println("{'status':'error','message':'Login failed'}");

@@ -1,6 +1,8 @@
 package TemaTest;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Postare {
     private String textPostare;
@@ -8,13 +10,6 @@ public class Postare {
     public Comentariu comentariu;
 
     Postare(){
-    }
-    Postare(String text) {
-        setTextPostare(text);
-    }
-
-    public void setComentariu(Comentariu comentariu) {
-        this.comentariu = comentariu;
     }
 
     public void setTextPostare(String text) {
@@ -39,8 +34,55 @@ public class Postare {
         }
     }
 
-    // facem un fisier cu likeruri unde se tine id posterii + valoarea de LIKE = TRUE
+    public int creatPostareUser(Postare text, Utilizator utilizator) {
+        if(text.getTextPostare() == null) {
+            //nu s-a primit niciun text
+            return 4;
+        }
+        if(text.verficareLungime()) {
+            //postarea e buna
+            utilizator.postari.setTextPostare(text.getTextPostare());
+            utilizator.postari.introducInFisier(utilizator);
+            return 3;
+        }
+        return 5; //postarea are mai mult de 300 de caractere
+    }
+
+    public void stergePost(Utilizator user, Postare text) {
+
+        // citim continut fisier intr-o lista
+        List<String> lin = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
+            String linie;
+            while ((linie = reader.readLine()) != null) {
+                lin.add(linie);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            // Verificam daca linia de șters exista
+            boolean linieGasita;
+            linieGasita = lin.remove(user.userName +"," + text.getTextPostare() + ",");
+
+            if (linieGasita) {
+                // Rescrierea conținutului actualizat înapoi în fișier
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/java/TemaTest/post.csv"))) {
+                    for (String liniesec : lin) {
+                        writer.write(liniesec);
+                        writer.newLine();
+                    }
+                }
+            }
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     Likeable likeable = new Likeable() {
+
+        // facem un fisier cu likeruri unde se tine user name + id postare + valoarea de LIKE = TRUE
         @Override
         public void fisierLikeId(String id, Utilizator user) {
             try (FileWriter fw = new FileWriter("src/main/java/TemaTest/like.csv", true);
@@ -99,9 +141,7 @@ public class Postare {
         String line;
         int contor = 0;
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
-            String splitBy = ",";
             while ((line = br.readLine()) != null) {
-
                 for(int i = 0; i < line.length(); i+=2) {
                     contor++;
                     if (contor == Integer.parseInt(idpost)) {
@@ -113,6 +153,6 @@ public class Postare {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return  0; // nu are like
+        return  0; // nu exista postare cu id-ul dat
     }
 }

@@ -10,7 +10,8 @@ public class FunctiiAjutatoare {
     public FunctiiAjutatoare() {
     }
 
-    public static String extragerePN(String rowstring, int lungime) {
+    // extrage doar valoare dintre ' '
+    public static String extragere(String rowstring, int lungime) {
         String s = rowstring.replaceAll("'", "");
         return  s.substring(lungime);
     }
@@ -59,13 +60,190 @@ public class FunctiiAjutatoare {
         }
     }
 
+    //necesitate in Region 4, 5
+    public static int verUserFollow(Utilizator utilizator, String follow, int val) {
+        if (follow == null) {
+            return 4; // No username to follow was provided
+        }
+        // se verifica follow (doar dupa numele lui) daca este in baza de date si daca nu e user-ul nostru
+        int exist = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/user.csv"))) {
+            String line;
+            String splitBy = ",";
 
-    // val == 1 --> afiseaza toate postarile tuturor followerilor
+            while ((line = br.readLine()) != null) {
+                String[] user = line.split(splitBy);
+
+                for (String s : user) {
+                    // daca user-ul cerut exista in baza de date verificam daca era deja in followurile userUL nostru
+                    if (follow.equals(s) && (!follow.equals(utilizator.userName))) {
+                        exist = 1;
+                        break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (exist == 0) {
+            return 5; // nu exista in baza de date, The username to follow was not valid
+        }
+
+        /* val = 1 --> pentru executia la follow cand fisierul e gol la inceput
+         *  val = 2 --> pentru executia la unfollow cand fisierul e gol*/
+        if(val == 1) {
+            // daca userul nu are niciun follower atunci il punem
+            if (!verfisier()) {
+                utilizator.setFollow(follow);
+                utilizator.introducInFisierFolloweri(follow, utilizator);
+                return 3; //“Operation execute successfully”
+            }
+        } else if( val == 2){
+            // daca userul nu are niciun follower atunci nu avem ce sa stergem
+            if(!verfisier()) {
+                return 5; //The username to unfollow was not valid
+            }
+        }
+
+        int ok = 0;
+        if(verfisier()) {
+            try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/follow.csv"))) {
+                String lines;
+                String splitBys = ",";
+                while ((lines = br.readLine()) != null){
+                    String[] linie = lines.split(splitBys);
+                    for (int i = 0; i < linie.length; i+=2) {
+                        if (Objects.equals(linie[i + 1], follow) && Objects.equals(linie[i], utilizator.userName)) {
+                            ok = 1;
+                            break;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if( val == 1 ) {
+            if (ok == 1) {
+                return 5; //exista deja in followeri/The username to follow was not valid
+            } else {
+                // inseamna ca utilizatorul nu exista in lista userului de folooweri si trebuie pus
+                utilizator.setFollow(follow);
+                utilizator.introducInFisierFolloweri(follow, utilizator);
+                return 3; //“Operation execute successfully”
+            }
+        }
+        if(val == 2) {
+            if (ok == 1) {
+                // stergem din fisierul de followeri userul
+                stergeFollowOrLike(follow,1, utilizator);
+                return 3; //exista deja in followeri, “Operation executed successfully
+            } else {
+                return 5; //nu se gaseste in lista user - ului inseamna ca e deja unfollow
+            }
+        }
+        return 0;
+    }
+
+    public static void stergeFollowOrLike(String followOrId, int val, Utilizator user) {
+        String path;
+        if(val == 1) {
+            path = "src/main/java/TemaTest/follow.csv";
+        } else if(val == 2) {
+            path = "src/main/java/TemaTest/like.csv";
+        } else {
+            path = "src/main/java/TemaTest/likeComentariu.csv";
+        }
+        // citim continut fisier
+        List<String> lin = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String linie;
+            while ((linie = reader.readLine()) != null) {
+                lin.add(linie);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            // Verificam daca linia de șters exista
+            boolean linieGasita = false;
+            if(val == 1) {
+                linieGasita = lin.remove(user.userName + "," + followOrId + ",");   /// adauga user name
+            } else if(val == 2 || val == 3) {
+                linieGasita = lin.remove(user.userName + "," + followOrId + "," + "true,");
+            }
+
+            if (linieGasita) {
+                // Rescrierea conținutului actualizat înapoi în fișier
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(path))) {
+                    for (String liniesec : lin) {
+                        writer.write(liniesec);
+                        writer.newLine();
+                    }
+                }
+            }
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // vedem daca fisierul este gol sau are scris ceva in el
+    public static boolean verfisier() {
+        try (BufferedReader brs = new BufferedReader(new FileReader("src/main/java/TemaTest/follow.csv"))) {
+            String lines;
+            if ((lines = brs.readLine()) == null){
+                return false;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static int veruserpre(String usefollow) {
+        if (usefollow == null) {
+            return 4; //No username to list posts was provided
+        }
+        int exist = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/user.csv"))) {
+            String line;
+            String splitBy = ",";
+
+            while ((line = br.readLine()) != null) {
+                String[] usersecond = line.split(splitBy);
+
+                for (String s : usersecond) {
+                    // user-ul cerut exista in baza de date
+                    if (usefollow.equals(s)) {
+                        exist = 1;
+                        return 3; //  exista in baza de date
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (exist == 0) {
+            return 5; // nu exista in baza de date, The username to list posts was not valid
+        }
+        return 0;
+    }
+
+
+    // val == 1 --> afiseaza toate postarile tuturor persoanelor urmarite
     // val == 2 -->  afiseaza postarile username-ului primit
     public static void afisFolowPost(Utilizator user, String userfollow, int val) {
-        int one = 0;
         int contorpost = numberpost(1);
+        int one = 0;
         int existauser = 0;
+
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        Date date = new Date();
+        String currentDateAsString = dateFormat.format(date);
+
         try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/follow.csv"))) {
             String lines;
             String splitBys = ",";
@@ -88,9 +266,6 @@ public class FunctiiAjutatoare {
                                             if (one == 1) {
                                                 System.out.print("{ 'status' : 'ok', 'message' : [");
                                             }
-                                            DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-                                            Date date = new Date();
-                                            String currentDateAsString = dateFormat.format(date);
                                             if (contorpost == 1) {
                                                 System.out.print("{'post_id' : '" + contorpost + "', 'post_text' : '" + linietwo[j] + "' , 'post_date':'" + currentDateAsString + "', 'username' : '" + linietwo[j - 1] + "'}]}");
                                             } else {
@@ -119,9 +294,6 @@ public class FunctiiAjutatoare {
                                                 if (one == 1) {
                                                     System.out.print("{ 'status' : 'ok', 'message' : [");
                                                 }
-                                                DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-                                                Date date = new Date();
-                                                String currentDateAsString = dateFormat.format(date);
                                                 if (contorpost == 1) {
                                                     System.out.print("{'post_id' : '" + contorpost + "', 'post_text' : '" + linietwo[j] + "' , 'post_date':'" + currentDateAsString + "'}]}");
                                                 } else {
@@ -153,12 +325,6 @@ public class FunctiiAjutatoare {
     // numarul de comentari din fisier --> val = 2
      public static int numberpost(int val) {
         int contor = 0;
-        String path = null;
-        if(val == 1) {
-            path = "src/main/java/TemaTest/post.csv";
-        } else if(val == 2) {
-            path = "src/main/java/TemaTest/comentarii.csv";
-        }
         try (BufferedReader brs = new BufferedReader(new FileReader("src/main/java/TemaTest/post.csv"))) {
             String linestwo;
             String splitBystwo = ",";
@@ -191,9 +357,9 @@ public class FunctiiAjutatoare {
         return contor;
     }
 
-    // region
+    // region 12
     public static void verificaAfiseazaComLike(Utilizator user, String id) {
-        int one = 0; // ajuta atunci cand nu exista postarea si afiseaza outputul corect
+        int one = 0; // ajuta atunci cand nu exista postarea sa afiseze outputul corect
         int contorid = 0;  // determina id-ul postarii
 
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
@@ -235,12 +401,12 @@ public class FunctiiAjutatoare {
 
                 }
             }
-            if(one == 0) {
-                System.out.print("{ 'status' : 'error', 'message' : 'The post identifier was not valid'}");
-            }
-
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+
+        if(one == 0) {
+            System.out.print("{ 'status' : 'error', 'message' : 'The post identifier was not valid'}");
         }
     }
 
@@ -289,15 +455,17 @@ public class FunctiiAjutatoare {
         System.out.print(" ]}");
     }
 
+
+
     // val == 1 -> face un vector de stringuri cu nr de like-uri pe postare / region 17
     // val == 2 -> face un vector de stringuri cu nr de comentarii pe postare / region 18
     public static String[] postariOrdineLikeOrComm(int val ) {
         String[] ordine = new String[numberpost(1) + 1];
         int[] vallike = new int[numberpost(1) + 1];
-        String path = null;
+        String path;
         if (val == 1) {
             path = "src/main/java/TemaTest/like.csv";
-        } else if(val == 2) {
+        } else {
             path = "src/main/java/TemaTest/comentarii.csv";
         }
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
@@ -306,11 +474,7 @@ public class FunctiiAjutatoare {
             while ((lines = br.readLine()) != null) {
                 String[] linie = lines.split(splitBys);
                 for(int j = 0; j < linie.length; j+=3){
-                    if(val == 1) {
                         vallike[Integer.parseInt(linie[j + 1])]++;
-                    } else if(val == 2) {
-                        vallike[Integer.parseInt(linie[j + 1])]++;
-                    }
                 }
             }
 
@@ -323,8 +487,9 @@ public class FunctiiAjutatoare {
             ordine[i] = i + "," + vallike[i];
         }
 
-        int maxlike = 0;
-        String valintermediar = null;
+        int maxlike;
+        String valintermediar;
+
         // ordonam vectorul de like-uri in functie de like-uri
         for(int i = 1; i <= numberpost(1); i++){
             String splitBy = ",";
@@ -338,6 +503,10 @@ public class FunctiiAjutatoare {
                     valintermediar = ordine[i];
                     ordine[i] = ordine[j];
                     ordine[j] = valintermediar;
+                } else if(maxlike == Integer.parseInt(liketwo[1]) && Integer.parseInt(like[0]) > Integer.parseInt(liketwo[0])) {
+                    valintermediar = ordine[i];
+                    ordine[i] = ordine[j];
+                    ordine[j] = valintermediar;
                 }
             }
         }
@@ -346,7 +515,7 @@ public class FunctiiAjutatoare {
 
     // val == 1 most like post / region 17
     // val == 2 most comment post / region 18
-    public static void afisaremostlikepost(Utilizator user, int val) {
+    public static void afisaremostlikepost(int val) {
         int numberpost = numberpost(1);
         int ones = 0;
         String[] ordine = postariOrdineLikeOrComm(val);
@@ -372,13 +541,16 @@ public class FunctiiAjutatoare {
                         if(ones == 1) {
                             System.out.print("{ 'status' : 'ok', 'message' : [");
                         }
+
                         if(val == 1) {
+                            // daca postarea este ultima ce trebuie afisata se schimba la sfarsit putin output-ul(al doilea if)
                             if (contor == Integer.parseInt(linie[0]) && contor != numberpost) {
                                 System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j + 1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_likes' : '" + linie[1] + "' },");
                             } else if (contor == Integer.parseInt(linie[0]) && contor == numberpost) {
                                 System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j + 1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_likes' : '" + linie[1] + "' } ]}");
                             }
                         } else if(val == 2) {
+                            // daca postarea este ultima ce trebuie afisata se schimba la sfarsit putin output-ul(al doilea if)
                             if (contor == Integer.parseInt(linie[0]) && contor != numberpost) {
                                 System.out.print("{'post_id' : '" + contor + "','post_text' : '" + lines[j + 1] + "', 'post_date' : '" + currentDateAsString + "', 'username' : '" + lines[j] + "', 'number_of_comments' : '" + linie[1] + "' },");
                             } else if (contor == Integer.parseInt(linie[0]) && contor == numberpost) {
@@ -388,7 +560,6 @@ public class FunctiiAjutatoare {
                     }
 
                 }
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -399,7 +570,7 @@ public class FunctiiAjutatoare {
     public static String[] postariOrdineFollow() {
         String[] ordine = new String[numarUser() + 1];
         int[] vallike = new int[numarUser() + 1];
-        String path = null;
+        String path;
         path = "src/main/java/TemaTest/follow.csv";
 
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
@@ -408,7 +579,8 @@ public class FunctiiAjutatoare {
             while ((lines = br.readLine()) != null) {
                 String[] linie = lines.split(splitBys);
                 for(int j = 0; j < linie.length; j+=2){
-                    int index = 0;
+                    int index;
+                    //user-ul urmarit
                     String lastcaracter = String.valueOf(linie[j + 1].charAt(linie[j+1].length()-1));
                     if(lastcaracter.equals("t")) {
                         index = 1;
@@ -423,7 +595,7 @@ public class FunctiiAjutatoare {
             throw new RuntimeException(e);
         }
 
-        //trecem valorile in vector unde punem id postare si numarul de like-uri
+        //trecem valorile in vector unde punem user si numarul de followeri
         for (int i = 1; i <= numarUser(); i++){
             if(i == 1) {
                 ordine[i] = "test" + "," + vallike[i];
@@ -432,8 +604,8 @@ public class FunctiiAjutatoare {
             }
         }
 
-        int maxfollow = 0;
-        String valintermediar = null;
+        int maxfollow;
+        String valintermediar;
         // ordonam vectorul de like-uri in functie de like-uri
         for(int i = 1; i <= numarUser(); i++){
             String splitBy = ",";
@@ -453,6 +625,7 @@ public class FunctiiAjutatoare {
         return ordine;
     }
 
+    // Region 19
     public static void afisareMostFollowed() {
         String[] ordine = postariOrdineFollow();
         int ones = 0;
@@ -476,10 +649,6 @@ public class FunctiiAjutatoare {
     public static String[] nrLikeComPost(){
         String[] ordine = postariOrdineLikeOrComm(1);
         int[] vallike = new int[numberpost(1) + 1];
-        String path = null;
-        int contorcoment = numberpost(2);
-        path = "src/main/java/TemaTest/comentarii.csv";
-
 
         try (BufferedReader brs = new BufferedReader(new FileReader("src/main/java/TemaTest/likeComentariu.csv"))) {
             String linestwo;
@@ -504,7 +673,7 @@ public class FunctiiAjutatoare {
             }
         }
 
-        String intermadiar = null;
+        String intermadiar;
         for(int i = 1; i <= numberpost(1); i++){
             String maxval = ordine[i];
             for(int j = i+1; j <= numberpost(1); j++) {
@@ -535,7 +704,7 @@ public class FunctiiAjutatoare {
             ones++;
             String splitBy = ",";
             String[] like = ordine[i].split(splitBy);
-            String test = null;
+            String test;
             if(Integer.parseInt(like[0]) == 1) {
                 test = "test";
             } else {

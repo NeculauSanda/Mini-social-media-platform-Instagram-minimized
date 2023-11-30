@@ -2510,7 +2510,7 @@ public class AppTest
 
     //endregion
 
-    //region 12 Detalii postare (text, număr de like-uri, listă comentarii postare, ordonate descrescător după dată)
+    //region 12 Detalii postare (text, numar de like-uri, lista comentarii postare, ordonate descrescator dupa data)
 
     @Test
     public void testPostDetailsNoUsername()

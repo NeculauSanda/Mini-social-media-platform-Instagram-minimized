@@ -10,17 +10,10 @@ public class Comentariu {
     Comentariu() {
     }
 
-    public void setTextComentariu(String comentariu) {
-        this.textComentariu = comentariu;
-    }
-
     public String getTextComentariu() {
         return textComentariu;
     }
 
-    public boolean verficareLungime() {
-        return textComentariu.length() < 300;
-    }
 
     public void introducInFisier(Utilizator user, String id) {
         try (FileWriter fw = new FileWriter("src/main/java/TemaTest/comentarii.csv", true);
@@ -31,6 +24,21 @@ public class Comentariu {
             e.printStackTrace();
         }
     }
+
+    public int creatComentPostare(String text, Utilizator utilizator, String id) {
+        if(text == null) {
+            //nu s-a primit niciun text
+            return 4;
+        }
+        if(text.length() < 300) {
+            //postarea e buna
+            utilizator.postari.comentariu.textComentariu = text;
+            utilizator.postari.comentariu.introducInFisier(utilizator, id);
+            return 3; // actiunea s-a realizat cu succes
+        }
+        return 5; //postarea are mai mult de 300 de caractere
+    }
+
 
     // val == 1 ->verifica comentariu si dupa user si id
     // val == 2 -> verifica comentariu doar dupa id
@@ -60,6 +68,34 @@ public class Comentariu {
             e.printStackTrace();
         }
         return  5; // nu are comentariu
+    }
+
+    public void stergeCom(Utilizator user, String id) {
+        try {
+            BufferedReader com = new BufferedReader(new FileReader("src/main/java/TemaTest/comentarii.csv"));
+            PrintWriter comtemp = new PrintWriter(new FileWriter("src/main/java/TemaTest/comentarii.csv" + ".temp"));
+            String linie;
+            while ((linie = com.readLine()) != null) {
+                // Verifica daca linia începe cu cuvintele specificate
+                if (!linie.startsWith(user.userName +"," + id + ",")) {
+                    comtemp.println(linie);
+                }
+            }
+            comtemp.close();
+            com.close();
+
+            // Stergem fisierul original
+            if (!new File("src/main/java/TemaTest/comentarii.csv").delete()) {
+                return;
+            }
+
+            // Redenumim fișierul temporar la numele original
+            boolean b = new File("src/main/java/TemaTest/comentarii.csv" + ".temp").renameTo(new File("src/main/java/TemaTest/comentarii.csv"));
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     Likeable likeable = new Likeable() {
