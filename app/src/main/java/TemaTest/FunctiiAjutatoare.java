@@ -656,7 +656,33 @@ public class FunctiiAjutatoare {
             while ((linestwo = brs.readLine()) != null) {
                 String[] linietwo = linestwo.split(splitBy);
                 for(int j = 0; j < linietwo.length; j+=3){
-                    vallike[Integer.parseInt(linietwo[j+1])]++;
+
+                    try (BufferedReader br = new BufferedReader(new FileReader("src/main/java/TemaTest/comentarii.csv"))) {
+                        String lin;
+                        String split = ",";
+                        while ((lin = br.readLine()) != null) {
+                            String[] linie = lin.split(split);
+                            int contor2 = 0;
+                            for (int t = 0 ; t < numberpost(2); t+=3) {
+                                int index = 0;
+                                contor2++;
+                                if(contor2  == Integer.parseInt(linietwo[j+1])){
+                                //user-ul urmarit
+                                    String lastcaracter = String.valueOf(linie[t].charAt(linie[t].length()-1));
+                                    if(lastcaracter.equals("t")) {
+                                        index = 1;
+                                    } else {
+                                        index = Integer.parseInt(lastcaracter);
+                                    }
+                                    vallike[index]++;
+                                }
+
+                            }
+                        }
+                    } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+
                 }
             }
         } catch (IOException e) {
